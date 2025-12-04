@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEVIATHAM INTELLIGENCE - CIA ACCESS</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+        :root {
+            --primary-color: #00ff00;
+            --bg-color: #050505;
+            --panel-bg: rgba(0, 20, 0, 0.85);
+            --alert-color: #ff3333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            overflow-x: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- EFECTOS CRT Y FONDO --- */
+        #canvas-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+        }
+
+        .crt-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        .screen-flicker {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 255, 0, 0.02);
+            opacity: 0;
+            z-index: 998;
+            pointer-events: none;
+            animation: flicker 0.15s infinite;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.02; }
+            50% { opacity: 0.05; }
+            100% { opacity: 0.02; }
+        }
+
+        /* --- CONTENEDOR PRINCIPAL --- */
+        .container {
+            width: 95%;
+            max-width: 800px;
+            height: 90vh;
+            border: 1px solid var(--primary-color);
+            background: var(--panel-bg);
+            box-shadow: 0 0 20px var(--primary-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow-y: auto;
+        }
+
+        /* --- ENCABEZADO --- */
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            text-shadow: 0 0 10px var(--primary-color);
+            letter-spacing: 2px;
+        }
+
+        .sub-header {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* --- VISTAS (LOGIN, PANEL, RESULTADOS) --- */
+        .view {
+            display: none;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .view.active {
+            display: flex;
+        }
+
+        /* --- VISTA LOGIN --- */
+        .login-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            gap: 20px;
+        }
+
+        input[type="text"] {
+            background: black;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 15px;
+            font-size: 1.2rem;
+            width: 100%;
+            max-width: 300px;
+            text-align: center;
+            outline: none;
+            box-shadow: 0 0 5px var(--primary-color);
+        }
+
+        button {
+            background: var(--primary-color);
+            color: black;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: white;
+            box-shadow: 0 0 15px var(--primary-color);
+        }
+
+        .error-msg {
+            color: var(--alert-color);
+            text-shadow: 0 0 5px var(--alert-color);
+            display: none;
+            margin-top: 10px;
+        }
+
+        /* --- VISTA SELECCIÓN --- */
+        .selection-panel {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        @media(min-width: 600px) {
+            .selection-panel {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .card {
+            border: 1px solid var(--primary-color);
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+            background: rgba(0, 50, 0, 0.3);
+        }
+
+        .card:hover {
+            background: rgba(0, 255, 0, 0.1);
+            transform: scale(1.02);
+        }
+
+        .card h3 {
+            margin-bottom: 10px;
+            text-decoration: underline;
+        }
+
+        /* --- VISTA TERMINAL --- */
+        #terminal-output {
+            flex-grow: 1;
+            background: black;
+            border: 1px dashed var(--primary-color);
+            padding: 10px;
+            font-size: 0.9rem;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin-bottom: 10px;
+        }
+
+        .log-line {
+            margin-bottom: 2px;
+        }
+        .success { color: #00ff00; }
+        .warning { color: yellow; }
+        .danger { color: red; }
+        .process { color: cyan; }
+
+        /* --- VISTA RESULTADOS --- */
+        .results-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .result-section {
+            border: 1px solid var(--primary-color);
+            padding: 15px;
+            background: rgba(0, 20, 0, 0.9);
+        }
+
+        .result-section h2 {
+            background: var(--primary-color);
+            color: black;
+            padding: 5px;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+        }
+
+        .person-card {
+            border-bottom: 1px dashed #004400;
+            padding: 8px 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .person-card:last-child { border-bottom: none; }
+        
+        .person-name { font-weight: bold; color: #fff; }
+        .person-data { font-size: 0.9rem; color: #aaa; margin-left: 10px; }
+        .highlight { color: yellow; }
+
+        /* Scrollbar personalizada */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #001100; }
+        ::-webkit-scrollbar-thumb { background: #00ff00; }
+
+    </style>
+</head>
+<body>
+
+    <canvas id="canvas-bg"></canvas>
+    
+    <div class="crt-overlay"></div>
+    <div class="screen-flicker"></div>
+
+    <div class="container">
+        <header>
+            <h1>LEVIATHAM BOT V1.0.0</h1>
+            <div class="sub-header">CIA DOXING SIMULATION INTERFACE // TOP SECRET</div>
+        </header>
+
+        <div id="view-login" class="view active">
+            <div class="login-box">
+                <p>INGRESE DNI DEL OBJETIVO</p>
+                <input type="text" id="input-dni" placeholder="XX.XXX.XXX" maxlength="15">
+                <button onclick="checkDNI()">INICIAR CONSULTA</button>
+                <div id="login-error" class="error-msg">ACCESO DENEGADO: DNI NO AUTORIZADO</div>
+            </div>
+            <div style="text-align: center; margin-top: auto; font-size: 0.7rem; opacity: 0.5;">
+                INDUSTRIAS LEVIATHAM © 2025 - UNAUTHORIZED ACCESS IS A FEDERAL CRIME
+            </div>
+        </div>
+
+        <div id="view-select" class="view">
+            <h2>SELECCIONE TIPO DE RASTREO</h2>
+            <div class="selection-panel">
+                <div class="card" onclick="startSimulation('standard')">
+                    <h3>DOXING COMÚN</h3>
+                    <p>Búsqueda en bases de datos públicas y padrón electoral básico.</p>
+                </div>
+                <div class="card" onclick="startSimulation('ai')">
+                    <h3>RELACIONADOS + IA CORE</h3>
+                    <p>Potenciado por Leviatham Core. Cruce de datos API, redes sociales, RENAPER y análisis de entorno.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-terminal" class="view">
+            <div id="terminal-output"></div>
+            <div style="height: 20px; border-top: 1px solid #00ff00; display: flex; align-items: center;">
+                <span class="blink">_</span> PROCESSING...
+            </div>
+        </div>
+
+        <div id="view-results" class="view">
+            <div class="results-container">
+                
+                <div class="result-section">
+                    <h2>OBJETIVOS PRINCIPALES (ORDEN ETARIO)</h2>
+                    <div id="list-main"></div>
+                </div>
+
+                <div class="result-section">
+                    <h2>PERSONAS RELACIONADAS (DATABASE)</h2>
+                    <div id="list-related"></div>
+                </div>
+
+                <div class="result-section">
+                    <h2>FAMILIA RELACIONADA (API MALTEGO)</h2>
+                    <div id="list-api"></div>
+                </div>
+
+                <button onclick="location.reload()" style="margin-top: 20px;">NUEVA CONSULTA</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURACIÓN DE DATOS ---
+        const TARGET_DNI = "48181389";
+        
+        // Datos proporcionados
+        const mainGroup = [
+            { name: "MONTAÑO GEMIO NESTOR", dni_cuil: "20930349179", phone: "" },
+            { name: "MONTAÑO GOMEZ YAMILA AYELEN", dni_cuil: "27464392594", phone: "11420005" },
+            { name: "GOMEZ ZULMA LILIANA", dni_cuil: "27938895584", phone: "1142000536" },
+            { name: "MONTAÑO GOMEZ MICHEL NESTOR", dni_cuil: "20438776959", phone: "" },
+            { name: "ΜΟΝΤΑÑO GOMEZ CRISTOPHER LAUTARO", dni_cuil: "20490084240", phone: "" },
+            { name: "MONTANO GOMEZ ANGELINA KIARA", dni_cuil: "27507071975", phone: "" }
+        ];
+
+        const relatedGroup = [
+            { name: "MONTAÑO CRISTIAN", dni_cuil: "20941641491" },
+            { name: "MONTAÑO EMANUEL", dni_cuil: "24941641500" },
+            { name: "MONTAÑO MONTAÑO JUAN BELIZARIO", dni_cuil: "20929705875" },
+            { name: "MONTAÑO MONTAÑO CARLOS EDWIN", dni_cuil: "20925653714" },
+            { name: "MONTAÑO MONTAÑO CELSO MARCO", dni_cuil: "20930107949" },
+            { name: "MONTAÑO MONTAÑO MARIA ARMINDA", dni_cuil: "27931120730" },
+            { name: "MONTAÑO MONTAÑO MIRIAN", dni_cuil: "24929815943" },
+            { name: "MONTAÑO GUIDO", dni_cuil: "20925514579" }
+        ];
+
+        const apiGroup = [
+            { name: "GOMEZ GOMEZ CONTEMPLACION", dni_cuil: "27935748920" },
+            { name: "GOMEZ FLAMINIO", dni_cuil: "20941755713" },
+            { name: "GOMEZ GOMEZ ELVIRA", dni_cuil: "27602908416", status: "FALLECIDO" }
+        ];
+
+        // --- LÓGICA DE ORDENAMIENTO (MAYOR A MENOR) ---
+        // Extraemos el número "central" del CUIL para estimar edad, pero 
+        // ajustamos manualmente porque los DNI 90M+ son extranjeros (padres) y 20M-50M son nativos.
+        // Asignaremos un "orden de prioridad" basado en la lógica familiar: Padres > Hijos mayores > Hijos menores.
+        
+        function sortMainGroup(data) {
+            // Lógica personalizada para este caso específico
+            // Padres (Extranjeros/Mayores): Nestor, Zulma
+            // Hijos (Nativos): Yamila (46M), Michel (43M), Cristopher (49M), Angelina (50M)
+            // Ordenar hijos por DNI ascendente (Menor DNI = Mayor edad)
+            
+            const parents = data.filter(p => p.dni_cuil.includes("9303") || p.dni_cuil.includes("9388"));
+            const children = data.filter(p => !parents.includes(p));
+
+            // Ordenar hijos por DNI (extraer del CUIL)
+            children.sort((a, b) => {
+                let dniA = parseInt(a.dni_cuil.substring(2, 10));
+                let dniB = parseInt(b.dni_cuil.substring(2, 10));
+                return dniA - dniB;
+            });
+
+            // Retornamos Padres + Hijos
+            return [...parents, ...children];
+        }
+
+        // --- FUNCIONES DE LA APP ---
+
+        function checkDNI() {
+            const input = document.getElementById('input-dni').value.replace(/\./g, '').trim();
+            const errorMsg = document.getElementById('login-error');
+            
+            if (input === TARGET_DNI) {
+                switchView('view-select');
+            } else {
+                errorMsg.style.display = 'block';
+                // Efecto de error visual
+                document.body.style.backgroundColor = '#200000';
+                setTimeout(() => document.body.style.backgroundColor = '#050505', 200);
+            }
+        }
+
+        function switchView(viewId) {
+            document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+        }
+
+        function startSimulation(type) {
+            switchView('view-terminal');
+            runHackingSequence(type);
+        }
+
+        async function runHackingSequence(type) {
+            const output = document.getElementById('terminal-output');
+            const messages = [
+                { text: "INITIALIZING LEVIATHAM BOT v1.0.0...", class: "process", delay: 500 },
+                { text: "ESTABLISHING SECURE CONNECTION...", class: "process", delay: 800 },
+                { text: `TARGET IDENTIFIED: DNI ${TARGET_DNI}`, class: "success", delay: 1000 },
+                { text: "BYPASSING RENAPER FIREWALL...", class: "warning", delay: 1500 },
+                { text: "ACCESS GRANTED. ROOT PRIVILEGES OBTAINED.", class: "success", delay: 500 },
+                { text: "SCANNING PUBLIC RECORDS...", class: "log-line", delay: 1200 },
+                { text: "SCANNING SOCIAL SECURITY DATABASES...", class: "log-line", delay: 1200 },
+                { text: "CROSS-REFERENCING MALTEGO API DATA...", class: "process", delay: 2000 },
+                { text: "DETECTING FAMILY TREE STRUCTURE...", class: "process", delay: 1500 },
+                { text: "DOWNLOADING BIOMETRIC DATA...", class: "warning", delay: 1000 },
+                { text: "DECRYPTING TELEPHONE RECORDS...", class: "warning", delay: 1800 },
+                { text: "COMPILING FINAL REPORT...", class: "success", delay: 1000 },
+                { text: "COMPLETE.", class: "success", delay: 500 }
+            ];
+
+            for (let msg of messages) {
+                await new Promise(r => setTimeout(r, msg.delay));
+                const div = document.createElement('div');
+                div.className = msg.class;
+                div.textContent = `> ${msg.text}`;
+                output.appendChild(div);
+                output.scrollTop = output.scrollHeight;
+            }
+
+            setTimeout(() => {
+                renderResults();
+                switchView('view-results');
+            }, 1000);
+        }
+
+        function renderResults() {
+            // Renderizar Grupo Principal
+            const sortedMain = sortMainGroup(mainGroup);
+            const mainContainer = document.getElementById('list-main');
+            
+            sortedMain.forEach(p => {
+                const html = `
+                    <div class="person-card">
+                        <div class="person-name">${p.name}</div>
+                        <div class="person-data">DNI/CUIL: <span class="highlight">${p.dni_cuil}</span></div>
+                        ${p.phone ? `<div class="person-data">TEL: ${p.phone}</div>` : ''}
+                    </div>
+                `;
+                mainContainer.innerHTML += html;
+            });
+
+            // Renderizar Relacionados
+            const relatedContainer = document.getElementById('list-related');
+            relatedGroup.forEach(p => {
+                 const html = `
+                    <div class="person-card">
+                        <div class="person-name">${p.name}</div>
+                        <div class="person-data">DNI/CUIL: ${p.dni_cuil}</div>
+                    </div>
+                `;
+                relatedContainer.innerHTML += html;
+            });
+
+            // Renderizar API Familia
+            const apiContainer = document.getElementById('list-api');
+            apiGroup.forEach(p => {
+                 const html = `
+                    <div class="person-card">
+                        <div class="person-name">${p.name}</div>
+                        <div class="person-data">DNI/CUIL: ${p.dni_cuil} ${p.status ? `<span style="color:red">(${p.status})</span>` : ''}</div>
+                    </div>
+                `;
+                apiContainer.innerHTML += html;
+            });
+        }
+
+        // --- BACKGROUND NEURAL NETWORK ANIMATION ---
+        const canvas = document.getElementById('canvas-bg');
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        let particles = [];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = (Math.random() - 0.5) * 2;
+                this.size = Math.random() * 2;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if(this.x < 0 || this.x > width) this.vx *= -1;
+                if(this.y < 0 || this.y > height) this.vy *= -1;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = '#00ff00';
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            const count = window.innerWidth < 600 ? 50 : 100; // Menos partículas en celular
+            for(let i=0; i<count; i++) particles.push(new Particle());
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            
+            for(let i=0; i<particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+                
+                // Conexiones
+                for(let j=i; j<particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const distance = Math.sqrt(dx*dx + dy*dy);
+                    
+                    if(distance < 150) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(0, 255, 0, ${1 - distance/150})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', () => { resize(); initParticles(); });
+        resize();
+        initParticles();
+        animate();
+
+    </script>
+</body>
+</html>
